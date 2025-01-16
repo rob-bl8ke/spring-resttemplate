@@ -11,23 +11,22 @@ The client (`BeerClientImpl`) will be consuming the API exposed by [the VS Code 
 ```
 This is simply to provide consistency between the two projects. The JSON returned is easily serialized to the same object. This is possible because both projects are Spring Boot projects.
 
+# `RestTemplateBuilder` and `RestTemplate`
 
-> 
+These examples offer alternate methods to use `RestTemplate` to retrieve data from via HTTP request. These alternate approaches can be tested in the `BeerClientImpl` class.
 
+```java
+    // Simply return response as a JSON string
+    ResponseEntity<String> stringResponse = restTemplate.getForEntity(BASE_URL + GET_BEER_PATH, String.class);
+    System.out.println((stringResponse.getBody()));
 
+    // Use a map to get data back in a semi-structured form. Good approach if not sure what is being returned by the API
+    // and would simply want to interrogate the information coming back.
+    ResponseEntity<Map> mapResponse = restTemplate.getForEntity(BASE_URL + GET_BEER_PATH, Map.class);
 
-
-
-I'm running into problems trying to run my Spring Boot project in VS Code. It was working fine but I moved the solution folder and renamed the folder. Now I'm getting the following error when I try to run the project through either the Spring Boot Dashboard or via the run and debug configuration (VS Code launch.json).
-
-I then reopened the folder in VS Code.
-
-The issue I get when attempting the run is: "ConfigError: The project 'project-name' is not a valid java project."
-
-When I look at the "Problems" pane, I see the following errors:
-
-"No implementation was created for [class-name]Mapper due to having a problem in the erroneous element java.util.ArrayList. Hint: this often means that some other annotation processor was supposed to process the erroneous element. You can also enable MapStruct verbose mode by setting -Amapstruct.verbose=true as a compilation argument."
-
-I'm not sure if these problems are related, but Maven cleans, compiles, and runs tests and integration tests without a problem. Do you have any idea what could be wrong?
-
-
+    // Parse content using Jackson to fetch the content that you need.
+    ResponseEntity<JsonNode> jsonResponse = restTemplate.getForEntity(BASE_URL + GET_BEER_PATH, JsonNode.class);
+    jsonResponse.getBody().findPath("content").elements().forEachRemaining(node -> {
+        System.out.println(node.get("beerName").asText());
+    });
+```
