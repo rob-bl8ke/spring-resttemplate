@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -87,5 +88,18 @@ public class BeerClientImpl implements BeerClient {
                 restTemplate.getForEntity(GET_BEER_PATH, BeerDTOPageImpl.class);
 
         return response.getBody();
+    }
+
+    @Override
+    public BeerDTO createBeer(BeerDTO newDto) {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+
+        // This will often return null as the response body because the HTTP spec does not require 201 CREATED
+        // to return a response body...
+//        ResponseEntity<BeerDTO> response = restTemplate.postForEntity(GET_BEER_PATH, newDto, BeerDTO.class);
+
+        // So POST and get the Location URL returned by the response... go fetch the resource.
+        URI uri = restTemplate.postForLocation(GET_BEER_PATH, newDto, BeerDTO.class);
+        return restTemplate.getForObject(uri.getPath(), BeerDTO.class);
     }
 }
