@@ -25,9 +25,8 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RestClientTest
@@ -57,6 +56,21 @@ public class BeerClientMockTest {
         when(mockRestTemplateBuilder.build()).thenReturn(restTemplate);
 
         beerClient = new BeerClientImpl(mockRestTemplateBuilder);
+    }
+
+    @Test
+    void testGetById() throws JsonProcessingException {
+        BeerDTO dto = getBeerDto();
+        String response = objectMapper.writeValueAsString(dto);
+
+        // Expect the request and response to behave like so...
+        server.expect(method(HttpMethod.GET))
+                .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
+
+        // Expect that a dto will be returned.
+        BeerDTO responseDto = beerClient.getBeerById(dto.getId());
+        assertThat(responseDto.getId()).isEqualTo(dto.getId());
     }
 
     @Test
