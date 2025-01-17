@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,6 +27,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
@@ -67,6 +69,25 @@ public class BeerClientMockTest {
         dto = getBeerDto();
         // Set up the expected response DTO and Location URI.
         dtoJson = objectMapper.writeValueAsString(dto);
+    }
+
+    @Test
+    void testDeleteBeerNotFound() {
+
+        // The mock responds with a "resource not found" exception, we expect that the call will result
+        // in an exception.
+        server.expect(method(HttpMethod.DELETE))
+                .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withResourceNotFound());
+
+        // Expect to throw the following exception on this call
+        assertThrows(HttpClientErrorException.class, ()-> {
+            beerClient.deleteBeer(dto.getId());
+        });
+
+        // Verifies that the call did in fact, get executed on the mock.
+        // If the mock is not called this test will fail silently... so quite important.
+        server.verify();
     }
 
     @Test
