@@ -70,6 +70,19 @@ public class BeerClientMockTest {
     }
 
     @Test
+    void testDeleteBeer() {
+        server.expect(method(HttpMethod.DELETE))
+                .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withNoContent());
+
+        beerClient.deleteBeer(dto.getId());
+
+        // Verifies that the call did in fact, get executed on the mock.
+        // If the mock is not called this test will fail silently... so quite important.
+        server.verify();
+    }
+
+    @Test
     void testUpdateBeer() {
         server.expect(method(HttpMethod.PUT))
                 .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
