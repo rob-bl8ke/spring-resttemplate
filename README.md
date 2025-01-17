@@ -30,3 +30,15 @@ These examples offer alternate methods to use `RestTemplate` to retrieve data fr
         System.out.println(node.get("beerName").asText());
     });
 ```
+
+## [Testing Client Applications](https://docs.spring.io/spring-framework/reference/testing/spring-mvc-test-client.html)
+
+The lessons in "Spring Boot 3, Spring Framework 6: Beginner to Guru Testing Spring Rest Template hits the backend server" still appear to have to hit the backend server in order to function correctly. Otherwise, you'll get an error response such as:
+
+```declarative
+[ERROR] Errors: 
+[ERROR]   BeerClientImplTest.createBeer:31 » ResourceAccess I/O error on POST request for "http://localhost:8080/api/v1/beer": null
+[ERROR]   BeerClientImplTest.deleteBeer:65 » ResourceAccess I/O error on POST request for "http://localhost:8080/api/v1/beer": null
+[ERROR]   BeerClientImplTest.getBeerById:76 » ResourceAccess I/O error on GET request for "http://localhost:8080/api/v1/beer": null
+...
+```
