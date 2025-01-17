@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withAccepted;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -50,8 +50,11 @@ public class BeerClientMockTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    BeerDTO dto;
+    String dtoJson;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws JsonProcessingException {
         RestTemplate restTemplate = restTemplateBuilderConfigured.build();
 
         // Mock the server (Bind the rest template to the mock server).
@@ -61,14 +64,14 @@ public class BeerClientMockTest {
         when(mockRestTemplateBuilder.build()).thenReturn(restTemplate);
 
         beerClient = new BeerClientImpl(mockRestTemplateBuilder);
+
+        dto = getBeerDto();
+        // Set up the expected response DTO and Location URI.
+        dtoJson = objectMapper.writeValueAsString(dto);
     }
 
     @Test
-    void testCreateBeer() throws JsonProcessingException {
-        BeerDTO dto = getBeerDto();
-
-        // Set up the expected response DTO and Location URI.
-        String response = objectMapper.writeValueAsString(dto);
+    void testCreateBeer() {
         URI uri = UriComponentsBuilder.fromPath(BeerClientImpl.GET_BEER_BY_ID_PATH)
                 .build(dto.getId());
 
@@ -81,7 +84,7 @@ public class BeerClientMockTest {
         // 201 Created response).
         server.expect(method(HttpMethod.GET))
                 .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
-                .andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
+                .andRespond(withSuccess(dtoJson, MediaType.APPLICATION_JSON));
 
         // action the request to create a resource
         BeerDTO responseDto = beerClient.createBeer(dto);
@@ -91,14 +94,11 @@ public class BeerClientMockTest {
     }
 
     @Test
-    void testGetById() throws JsonProcessingException {
-        BeerDTO dto = getBeerDto();
-        String response = objectMapper.writeValueAsString(dto);
-
+    void testGetById() {
         // Expect the request and response to behave like so...
         server.expect(method(HttpMethod.GET))
                 .andExpect(requestToUriTemplate(URL + BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
-                .andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
+                .andRespond(withSuccess(dtoJson, MediaType.APPLICATION_JSON));
 
         // Expect that a dto will be returned.
         BeerDTO responseDto = beerClient.getBeerById(dto.getId());
